@@ -7,11 +7,22 @@ authors = [
     { name = "Kazuki UMEMOTO", email = "64949252+UmemotoCtrl@users.noreply.github.com" }
 ]
 requires-python = ">=3.14"
-dependencies = []
+dependencies = [
+    "httpx>=0.28.1",
+    "python-dotenv>=1.2.4",
+]
 
 [project.scripts]
-ai-assistant-with-audio = "ai_assistant_with_audio:main"
+ai-assistant-with-audio = "ai_assistant_with_audio.cli:main"
 
 [build-system]
 requires = ["uv_build>=0.12.10,<0.13.0"]
 build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = ["ai_assistant_with_audio", "openrouter_audio"]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+]

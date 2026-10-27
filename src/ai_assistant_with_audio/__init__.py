@@ -1,2 +1,1 @@
-def main() -> None:
-    print("Hello from ai-assistant-with-audio!")
+"""Memory- and session-aware voice assistant backed by OpenRouter."""
