@@ -11,9 +11,7 @@ OUTPUT_CONTRACT = """\
 - memory_updates: memory-bank への変更の配列。不要なら空配列
   - op: add（section に text を段落として追記）/ replace（section の本文を text で置換）/ delete（text が空なら section を削除、text を含む段落を削除）
   - section: 見出し名（既存の見出しに合わせる。無ければ新規作成）
-  - text: 内容
-
-memory-bank には個人情報・好み・セッションをまたいで覚えるべき事実のみを記録してください。一時的な話題は記録しないでください。"""
+  - text: 内容"""
 
 
 def build_messages(
