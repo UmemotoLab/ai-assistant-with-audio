@@ -17,6 +17,7 @@ Copy-Item .env.example .env   # 値を設定する
 | `OPENROUTER_API_KEY` | ○ | 対話 LLM 用 |
 | `OPENROUTER_CHAT_MODEL` | ○ | 対話 LLM のモデル ID（JSON 応答に対応したもの） |
 | `GEMINI_API_KEY` | 音声用 | Gemini TTS 用 |
+| `GEMINI_TTS_MODEL` | 音声用 | Gemini TTS のモデル名（例: `gemini-3.8-flash-tts`） |
 | `GEMINI_VOICE_ID` | 音声用 | 音声 ID（`--voice-id` で上書き可）。`Kore` などのプリセット名でも動作を確認済み |
 | `SESSION_MATCH_THRESHOLD` | 任意 | セッション自動判定の閾値 0〜1（既定 0.5） |
 

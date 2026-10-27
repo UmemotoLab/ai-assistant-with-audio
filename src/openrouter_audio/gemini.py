@@ -4,18 +4,20 @@ from typing import Any
 import httpx
 
 from openrouter_audio.client import TIMEOUT_SECONDS, SpeechResult, error_message
+from openrouter_audio.settings import load_gemini_tts_model
 
 API_URL = "https://generativelanguage.googleapis.com/v1beta/interactions"
-MODEL = "gemini-3.8-flash-tts"
 
 
-def build_interaction_payload(text: str, voice_id: str, style: str | None = None) -> dict[str, Any]:
+def build_interaction_payload(
+    text: str, voice_id: str, model: str, style: str | None = None
+) -> dict[str, Any]:
     part: dict[str, Any] = {"type": "text", "text": text}
     if style:
         part["annotations"] = [{"type": "speech_metadata", "style": style}]
 
     return {
-        "model": MODEL,
+        "model": model,
         "input": [{"type": "user_input", "content": [part]}],
         "response_format": {"type": "audio"},
         "generation_config": {"speech_config": [{"voice": voice_id}]},
@@ -42,7 +44,7 @@ def synthesize_with_voice_id(
     style: str | None = None,
     client: httpx.Client | None = None,
 ) -> SpeechResult:
-    payload = build_interaction_payload(text, voice_id, style)
+    payload = build_interaction_payload(text, voice_id, load_gemini_tts_model(), style)
     headers = {"x-goog-api-key": api_key, "Content-Type": "application/json"}
 
     if client is None:

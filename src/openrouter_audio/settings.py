@@ -18,6 +18,14 @@ def load_gemini_api_key() -> str:
     return api_key
 
 
+def load_gemini_tts_model() -> str:
+    load_dotenv()
+    model = os.environ.get("GEMINI_TTS_MODEL", "").strip()
+    if not model:
+        raise ValueError("環境変数が未設定です: GEMINI_TTS_MODEL (.env を確認してください)")
+    return model
+
+
 def load_settings() -> Settings:
     load_dotenv()
 
