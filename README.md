@@ -8,7 +8,10 @@ OpenRouter のチャットモデルで応答し、Gemini TTS で読み上げる 
 ```powershell
 uv sync
 Copy-Item .env.example .env   # 値を設定する
+uv tool install --editable .  # `mio` コマンドをインストール（ソース変更は再インストール不要）
 ```
+
+`uv tool install` は `%USERPROFILE%\.local\bin` に実行ファイルを配置します。このフォルダが PATH にない場合は `uv tool update-shell` を実行し、ターミナルを再起動してください。
 
 `.env` の項目:
 
@@ -17,7 +20,6 @@ Copy-Item .env.example .env   # 値を設定する
 | `OPENROUTER_API_KEY` | ○ | 対話 LLM 用 |
 | `OPENROUTER_CHAT_MODEL` | ○ | 対話 LLM のモデル ID（JSON 応答に対応したもの） |
 | `GEMINI_API_KEY` | 音声用 | Gemini TTS 用 |
-| `GEMINI_TTS_MODEL` | 音声用 | Gemini TTS のモデル名（例: `gemini-3.8-flash-tts`） |
 | `GEMINI_VOICE_ID` | 音声用 | 音声 ID（`--voice-id` で上書き可）。`Kore` などのプリセット名でも動作を確認済み |
 | `SESSION_MATCH_THRESHOLD` | 任意 | セッション自動判定の閾値 0〜1（既定 0.5） |
 
@@ -26,20 +28,24 @@ Copy-Item .env.example .env   # 値を設定する
 ## 使い方
 
 ```powershell
-uv run ai-assistant-with-audio "私の好きな食べ物はラーメンです。覚えておいて。"
-uv run ai-assistant-with-audio --new "新しい話題です"          # 強制新規
-uv run ai-assistant-with-audio --session <ID> "続きの話です"    # 強制継続
-uv run ai-assistant-with-audio --no-tts "音声なしで実行"
-uv run ai-assistant-with-audio --verbose "判定スコアを表示"
+mio "私の好きな食べ物はラーメンです。覚えておいて。"
+mio --new "新しい話題です"          # 強制新規
+mio --session <ID> "続きの話です"    # 強制継続
+mio --no-tts "音声なしで実行"
+mio --verbose "判定スコアを表示"
 ```
+
+`mio` は `ai-assistant-with-audio` の別名です（仮想環境の有効化は不要）。開発中は `uv run ai-assistant-with-audio ...` でも同じように実行できます。
+
+> `data/`、`instructions.md`、`.env` はリポジトリルート基準で読み書きされるため、どのフォルダから実行しても同じデータを使います。
 
 | オプション | 内容 |
 |---|---|
 | `--new` / `--session ID` | セッションの自動判定を上書き |
 | `--no-tts` | 音声生成・再生を行わない |
 | `--voice-id` | Gemini の音声 ID を指定 |
-| `--data-dir` | データ保存先（既定 `data`） |
-| `--instructions` | LLM への指示ファイル（既定 `instructions.md`） |
+| `--data-dir` | データ保存先（既定: リポジトリ直下の `data/`） |
+| `--instructions` | LLM への指示ファイル（既定: リポジトリ直下の `instructions.md`） |
 | `--verbose` | セッション判定スコアと選択されたセッション ID を表示 |
 
 ## データ構造

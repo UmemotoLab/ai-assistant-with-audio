@@ -4,8 +4,9 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-DEFAULT_DATA_DIR = Path("data")
-DEFAULT_INSTRUCTIONS_FILE = Path("instructions.md")
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+DEFAULT_DATA_DIR = PROJECT_ROOT / "data"
+DEFAULT_INSTRUCTIONS_FILE = PROJECT_ROOT / "instructions.md"
 DEFAULT_SESSION_THRESHOLD = 0.5
 MAX_SESSIONS = 10
 RECENT_TURNS = 2
@@ -22,7 +23,7 @@ class Config:
 
 
 def load_config() -> Config:
-    load_dotenv()
+    load_dotenv(PROJECT_ROOT / ".env")
 
     api_key = os.environ.get("OPENROUTER_API_KEY", "").strip()
     chat_model = os.environ.get("OPENROUTER_CHAT_MODEL", "").strip()

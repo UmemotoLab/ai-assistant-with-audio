@@ -21,7 +21,7 @@ def env(tmp_path, monkeypatch):
     monkeypatch.setenv("OPENROUTER_CHAT_MODEL", "test/model")
     monkeypatch.delenv("GEMINI_API_KEY", raising=False)
     monkeypatch.delenv("GEMINI_VOICE_ID", raising=False)
-    monkeypatch.setattr("ai_assistant_with_audio.config.load_dotenv", lambda: None)
+    monkeypatch.setattr("ai_assistant_with_audio.config.load_dotenv", lambda *args, **kwargs: None)
     instructions = tmp_path / "instructions.md"
     shutil.copy(REPO_ROOT / "instructions.md", instructions)
     spoken: list[str] = []
