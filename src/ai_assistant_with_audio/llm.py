@@ -17,6 +17,7 @@ def chat(
     payload: dict[str, Any] = {
         "model": model,
         "messages": list(messages),
+        "plugins": [{"id": "web"}],
         "response_format": {
             "type": "json_schema",
             "json_schema": {

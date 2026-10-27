@@ -1,7 +1,31 @@
+import re
 import sys
 import threading
+from concurrent.futures import ThreadPoolExecutor
 
 from openrouter_audio.gemini import synthesize_with_voice_id
+
+FIRST_CHUNK_MAX_CHARS = 40
+CHUNK_MAX_CHARS = 120
+MAX_WORKERS = 3
+
+_SENTENCE_PATTERN = re.compile(r".+?(?:[。！？!?]+|\n+|$)", re.DOTALL)
+
+
+def split_text(text: str) -> list[str]:
+    """Split text into sentence-based chunks; the first is short so playback starts early."""
+    sentences = [s.strip() for s in _SENTENCE_PATTERN.findall(text) if s.strip()]
+    chunks: list[str] = []
+    current = ""
+    for sentence in sentences:
+        limit = FIRST_CHUNK_MAX_CHARS if not chunks else CHUNK_MAX_CHARS
+        if current and len(current) + len(sentence) > limit:
+            chunks.append(current)
+            current = ""
+        current += sentence
+    if current:
+        chunks.append(current)
+    return chunks
 
 
 def _play_wav(wav: bytes) -> None:
@@ -13,20 +37,24 @@ def _play_wav(wav: bytes) -> None:
     winsound.PlaySound(wav, winsound.SND_MEMORY)
 
 
-def start_speech(
-    api_key: str,
-    voice_id: str,
-    text: str,
-    style: str | None = None,
-) -> threading.Thread:
-    """Synthesize and play `text` on a background thread. Errors are reported, not raised."""
+def start_speech(api_key: str, voice_id: str, text: str) -> threading.Thread:
+    """Synthesize chunks in parallel and play them in order on a background thread.
+
+    Errors are reported, not raised.
+    """
+
+    def synthesize(chunk: str) -> bytes:
+        return synthesize_with_voice_id(api_key, chunk, voice_id).audio
 
     def run() -> None:
-        try:
-            result = synthesize_with_voice_id(api_key, text, voice_id, style=style)
-            _play_wav(result.audio)
-        except Exception as error:  # noqa: BLE001 - TTS must not break the text flow
-            print(f"警告: 音声の生成・再生に失敗しました: {error}", file=sys.stderr)
+        chunks = split_text(text) or [text]
+        with ThreadPoolExecutor(max_workers=MAX_WORKERS) as pool:
+            futures = [pool.submit(synthesize, chunk) for chunk in chunks]
+            for future in futures:
+                try:
+                    _play_wav(future.result())
+                except Exception as error:  # noqa: BLE001 - TTS must not break the text flow
+                    print(f"警告: 音声の生成・再生に失敗しました: {error}", file=sys.stderr)
 
     thread = threading.Thread(target=run, name="tts-playback")
     thread.start()

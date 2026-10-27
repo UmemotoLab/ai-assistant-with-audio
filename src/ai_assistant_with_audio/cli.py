@@ -125,7 +125,7 @@ def run(args: argparse.Namespace) -> int:
         memory.search(message),
         message,
         session,
-        store.recent_turns(session.id) if session else [],
+        store.recent_turns(),
     )
     response = _parse_with_retry(
         config,
@@ -137,9 +137,7 @@ def run(args: argparse.Namespace) -> int:
     voice_id = args.voice_id or config.gemini_voice_id
     if not args.no_tts:
         if config.gemini_api_key and voice_id:
-            speech_thread = speech.start_speech(
-                config.gemini_api_key, voice_id, response.reply, response.speech_style
-            )
+            speech_thread = speech.start_speech(config.gemini_api_key, voice_id, response.reply)
         else:
             print("警告: 音声は無効です（GEMINI_API_KEY と GEMINI_VOICE_ID の設定が必要）", file=sys.stderr)
 

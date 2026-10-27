@@ -5,7 +5,6 @@ from ai_assistant_with_audio.sessions import Session, Turn
 OUTPUT_CONTRACT = """\
 あなたの応答は次のキーを持つ JSON オブジェクトのみとし、JSON 以外の文字を含めないでください。
 - reply: ユーザに表示・読み上げるテキスト（必須）
-- speech_style: 読み上げの口調指示。不要なら null
 - session: セッションの作成・更新。更新不要なら null
   - title: 新規セッションのみ、短い題名。継続なら null
   - summary: 新規は要約全文、継続は更新後の要約全文。更新不要なら null
@@ -21,28 +20,27 @@ def build_messages(
     instructions: str,
     memory_excerpt: str,
     user_message: str,
-    session: Session | None = None,
-    recent_turns: Sequence[Turn] = (),
+    session: Session | None,
+    recent_turns: Sequence[Turn],
 ) -> list[dict[str, str]]:
     memory_part = memory_excerpt.strip() or "（該当なし）"
+    turns = "\n\n".join(
+        f"[{turn.timestamp}]\nユーザ: {turn.user}\nアシスタント: {turn.assistant}"
+        for turn in recent_turns
+    ) or "（なし）"
     if session is None:
-        user_content = (
-            "## セッション\n新規\n\n"
-            f"## memory-bank 抽出\n{memory_part}\n\n"
-            f"## ユーザメッセージ\n{user_message}"
-        )
+        session_part = "新規"
+        summary_part = ""
     else:
-        turns = "\n\n".join(
-            f"[{turn.timestamp}]\nユーザ: {turn.user}\nアシスタント: {turn.assistant}"
-            for turn in recent_turns
-        ) or "（なし）"
-        user_content = (
-            f"## セッション\n継続（ID: {session.id}、題名: {session.title}）\n\n"
-            f"## memory-bank 抽出\n{memory_part}\n\n"
-            f"## セッション要約\n{session.summary}\n\n"
-            f"## 直近の会話\n{turns}\n\n"
-            f"## ユーザメッセージ\n{user_message}"
-        )
+        session_part = f"継続（ID: {session.id}、題名: {session.title}）"
+        summary_part = f"## セッション要約\n{session.summary}\n\n"
+    user_content = (
+        f"## セッション\n{session_part}\n\n"
+        f"## memory-bank 抽出\n{memory_part}\n\n"
+        f"{summary_part}"
+        f"## 直近の会話（セッションを問わず）\n{turns}\n\n"
+        f"## ユーザメッセージ\n{user_message}"
+    )
 
     return [
         {"role": "system", "content": f"{instructions.strip()}\n\n{OUTPUT_CONTRACT}"},

@@ -7,10 +7,9 @@ MEMORY_OPS = ("add", "replace", "delete")
 RESPONSE_JSON_SCHEMA: dict[str, Any] = {
     "type": "object",
     "additionalProperties": False,
-    "required": ["reply", "speech_style", "session", "memory_updates"],
+    "required": ["reply", "session", "memory_updates"],
     "properties": {
         "reply": {"type": "string"},
-        "speech_style": {"type": ["string", "null"]},
         "session": {
             "type": ["object", "null"],
             "additionalProperties": False,
@@ -57,7 +56,6 @@ class MemoryUpdate:
 @dataclass(frozen=True)
 class ChatResponse:
     reply: str
-    speech_style: str | None = None
     session: SessionUpdate | None = None
     memory_updates: list[MemoryUpdate] = field(default_factory=list)
     parsed: bool = True
@@ -113,7 +111,6 @@ def parse_response(raw: str) -> ChatResponse:
 
     return ChatResponse(
         reply=reply.strip(),
-        speech_style=_optional_str(data.get("speech_style"), "speech_style"),
         session=session,
         memory_updates=updates,
     )

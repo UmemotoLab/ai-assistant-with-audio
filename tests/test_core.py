@@ -78,14 +78,16 @@ def test_session_create_select_and_update(tmp_path):
     assert store.get(session.id).title == "旅行計画"
 
 
-def test_session_turns_keep_last_three(tmp_path):
+def test_recent_turns_span_sessions_and_keep_last_two(tmp_path):
     store = SessionStore(tmp_path)
-    now = datetime.now().astimezone()
-    session = store.create("題名", "要約", now)
-    for index in range(5):
-        store.append_turn(session.id, f"q{index}", f"a{index}", now)
-    turns = store.recent_turns(session.id)
-    assert [t.user for t in turns] == ["q2", "q3", "q4"]
+    base = datetime(2026, 1, 1).astimezone()
+    first = store.create("A", "要約A", base)
+    second = store.create("B", "要約B", base)
+    store.append_turn(first.id, "q1", "a1", base + timedelta(minutes=1))
+    store.append_turn(second.id, "q2", "a2", base + timedelta(minutes=2))
+    store.append_turn(first.id, "q3", "a3", base + timedelta(minutes=3))
+    turns = store.recent_turns()
+    assert [t.user for t in turns] == ["q2", "q3"]
 
 
 def test_session_store_archives_oldest_beyond_ten(tmp_path):
@@ -101,11 +103,26 @@ def test_session_store_archives_oldest_beyond_ten(tmp_path):
     assert len(list((tmp_path / "archive").glob("*.summary.md"))) == 1
 
 
+def test_chat_requests_web_plugin():
+    import httpx
+
+    from ai_assistant_with_audio import llm
+
+    sent: dict = {}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        sent.update(json.loads(request.content))
+        return httpx.Response(200, json={"choices": [{"message": {"content": "{}"}}]})
+
+    with httpx.Client(transport=httpx.MockTransport(handler)) as client:
+        assert llm.chat("key", "model", [{"role": "user", "content": "x"}], client=client) == "{}"
+    assert sent["plugins"] == [{"id": "web"}]
+
+
 def test_parse_valid_response():
     raw = json.dumps(
         {
             "reply": "こんにちは",
-            "speech_style": None,
             "session": {"title": "挨拶", "summary": "挨拶を交わした"},
             "memory_updates": [{"op": "add", "section": "好み", "text": "朝型"}],
         }

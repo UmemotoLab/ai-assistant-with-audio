@@ -26,7 +26,7 @@ def env(tmp_path, monkeypatch):
     shutil.copy(REPO_ROOT / "instructions.md", instructions)
     spoken: list[str] = []
 
-    def fake_start(api_key, voice_id, text, style=None):
+    def fake_start(api_key, voice_id, text):
         spoken.append(text)
         return _Done()
 
@@ -54,7 +54,6 @@ def test_new_session_is_created_and_memory_updated(env, monkeypatch, capsys):
     payload = json.dumps(
         {
             "reply": "わかりました",
-            "speech_style": None,
             "session": {"title": "テスト", "summary": "テスト発話をした"},
             "memory_updates": [{"op": "add", "section": "好み", "text": "テスト好き"}],
         },

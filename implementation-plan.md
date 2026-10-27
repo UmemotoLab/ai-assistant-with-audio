@@ -45,7 +45,6 @@ src/ai_assistant_with_audio/
 ```json
 {
   "reply": "表示・読み上げるテキスト",
-  "speech_style": "任意。TTSの口調指示",
   "session": {
     "title": "新規時のみ",
     "summary": "新規は要約全文 / 継続は更新後の要約全文。更新不要なら null"
@@ -65,7 +64,7 @@ src/ai_assistant_with_audio/
 1. ユーザメッセージを受け取る。
 2. BM25 でセッション要約を検索する。最高スコアが閾値以上なら継続、未満なら新規。
 3. memory-bank を BM25 で検索し、抽出文を得る。
-4. 新規: Instructions＋memory抽出＋ユーザメッセージ。継続: Instructions＋memory抽出＋要約全文＋直近3ターン＋ユーザメッセージ。
+4. 新規: Instructions＋memory抽出＋ユーザメッセージ。継続: Instructions＋memory抽出＋要約全文＋直近2ターン（全セッション）＋ユーザメッセージ。
 5. OpenRouter を JSON 応答で呼び出す。
 6. 応答を表示し、同時に TTS 生成・再生を別スレッドで行う。
 7. JSON を解析し、セッション要約と memory-bank を更新する。会話ログを追記する。
@@ -90,7 +89,7 @@ src/ai_assistant_with_audio/
 4. **セッション管理**
    - 要約と会話ログを保存・読込する。
    - 要約を BM25 コーパスにして継続／新規を判定する。
-   - 直近3ターンをログ末尾から取得する。
+   - 直近2ターンを全セッションのログから取得する（セッションの継続・新規を問わない）。
    - 10件超過時は最古を `archive/` へ移す。
 5. **プロンプト組み立て**（新規／継続の2種）
 6. **LLM 呼び出しとレスポンス処理**
@@ -98,7 +97,7 @@ src/ai_assistant_with_audio/
    - 新規ならセッションを作成し、継続なら要約を更新する。どちらも会話ログを追記する。
 7. **TTS と表示**
    - 応答表示と並列に TTS 生成・再生する。
-   - `speech_style` は `style` に渡す。
+   - 口調は Gemini の voice ID で調整する（`speech_style` は使わない）。
    - TTS が失敗してもテキスト応答と保存処理は継続する。
    - `--no-tts` を追加する。
    - 終了時は再生の完了を待つ。

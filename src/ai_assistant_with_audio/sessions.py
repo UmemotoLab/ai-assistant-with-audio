@@ -141,16 +141,19 @@ class SessionStore:
         with self._log_path(session_id).open("a", encoding="utf-8") as handle:
             handle.write(json.dumps(record, ensure_ascii=False) + "\n")
 
-    def recent_turns(self, session_id: str, count: int = RECENT_TURNS) -> list[Turn]:
-        path = self._log_path(session_id)
-        if not path.exists():
+    def recent_turns(self, count: int = RECENT_TURNS) -> list[Turn]:
+        """Return the latest `count` turns across all sessions, oldest first."""
+        if not self.sessions_dir.exists():
             return []
-        lines = [line for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
-        turns = []
-        for line in lines[-count:]:
-            record = json.loads(line)
-            turns.append(Turn(record["ts"], record["user"], record["assistant"]))
-        return turns
+        turns = [
+            Turn(record["ts"], record["user"], record["assistant"])
+            for path in self.sessions_dir.glob("*.log.jsonl")
+            for line in path.read_text(encoding="utf-8").splitlines()
+            if line.strip()
+            for record in [json.loads(line)]
+        ]
+        turns.sort(key=lambda turn: datetime.strptime(turn.timestamp, TIME_FORMAT))
+        return turns[-count:] if count > 0 else []
 
     def _archive_oldest(self, keep: int) -> None:
         """Archive the oldest sessions (summary only) until at most `keep` remain."""
