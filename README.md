@@ -23,8 +23,13 @@ uv tool install --editable .  # `mio` コマンドをインストール（ソー
 | `GEMINI_TTS_MODEL` | 音声用 | Gemini TTS のモデル ID（例: `gemini-3.8-flash-lite-tts`） |
 | `GEMINI_VOICE_ID` | 音声用 | 音声 ID（`--voice-id` で上書き可）。`Kore` などのプリセット名でも動作を確認済み |
 | `SESSION_MATCH_THRESHOLD` | 任意 | セッション自動判定の閾値 0〜1（既定 0.5） |
-
 音声が未設定の場合は警告を出し、テキストのみで動作します。音声の再生は Windows（`winsound`）のみ対応です。
+
+### Google AI Studio での音声生成の例
+
+以下のプロンプトで「Gemini Voice」が生成した日本語音声の設定例です。`GEMINI_VOICE_ID` に指定して試せます。
+
+> 日本語。Speak in a slightly higher-pitched, bright, youthful feminine voice. Keep the delivery lively, energetic, warm, and naturally expressive, with a subtle touch of sweetness and gentle playfulness. Use clear articulation, light and nimble intonation, and a friendly, upbeat tone. Sound affectionate and approachable without being overly soft, breathy, or sugary. Keep the voice natural and confident, with a hint of cute warmth rather than exaggerated cuteness or childishness.
 
 ## 使い方
 
