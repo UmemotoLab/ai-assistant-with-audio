@@ -28,3 +28,19 @@ def test_start_speech_plays_in_order(monkeypatch):
     speech.start_speech("k", "v", "x").join()
     assert played == [b"A\xe3\x80\x82", b"B\xe3\x80\x82", b"C\xe3\x80\x82"]
 
+
+def test_clean_for_speech_converts_markdown_link():
+    assert speech.clean_for_speech(
+        "[openrouter.ai](https://openrouter.ai/typesafe)"
+    ) == "openrouter.aiのリンクを見てね"
+
+
+def test_clean_for_speech_converts_raw_url():
+    assert speech.clean_for_speech("https://example.com/foo") == "example.comのリンクを見てね"
+
+
+def test_split_text_applies_clean_for_speech():
+    assert speech.split_text("[openrouter.ai](https://openrouter.ai/typesafe)。") == [
+        "openrouter.aiのリンクを見てね。"
+    ]
+

@@ -10,10 +10,28 @@ CHUNK_MAX_CHARS = 120
 MAX_WORKERS = 3
 
 _SENTENCE_PATTERN = re.compile(r".+?(?:[。！？!?]+|\n+|$)", re.DOTALL)
+_MARKDOWN_LINK_PATTERN = re.compile(r"\[(?P<label>[^\]]+)\]\((?P<url>[^)]+)\)")
+
+
+def clean_for_speech(text: str) -> str:
+    """Convert Markdown links and raw URLs into TTS-friendly text.
+
+    Examples:
+        [openrouter.ai](https://openrouter.ai/typesafe) -> openrouter.aiのリンクを見てね
+        https://example.com/foo -> example.comのリンクを見てね
+    """
+    text = _MARKDOWN_LINK_PATTERN.sub(r"\g<label>のリンクを見てね", text)
+    text = re.sub(
+        r"https?://(?P<host>[^/]+)(?:/[^\s]*)?",
+        r"\g<host>のリンクを見てね",
+        text,
+    )
+    return text
 
 
 def split_text(text: str) -> list[str]:
     """Split text into sentence-based chunks; the first is short so playback starts early."""
+    text = clean_for_speech(text)
     sentences = [s.strip() for s in _SENTENCE_PATTERN.findall(text) if s.strip()]
     chunks: list[str] = []
     current = ""
